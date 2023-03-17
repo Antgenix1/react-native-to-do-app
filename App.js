@@ -1,46 +1,56 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { TextInput, Button, FlatList } from 'react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View, TextInput, Button, FlatList, TouchableOpacity } from 'react-native';
+import { DATA } from './mockData';
+import { v4 as uuidv4 } from 'uuid';
+import { styles } from './styles';
 
-const DATA = [
-  {
-    id: 1,
-    title: 'First Item',
-  },
-  {
-    id: 2,
-    title: 'Second Item',
-  },
-  {
-    id: 3,
-    title: 'Third Item',
-  },
-];
 
-const Item = ({title}) => (
+const Item = ({title, onDelete}) => (
   <View style={styles.item}>
     <Text style={styles.title}>{title}</Text>
+    <TouchableOpacity onPress={onDelete}>
+      <Text style={styles.deleteButton}>Delete</Text>
+    </TouchableOpacity>
   </View>
 );
 
 export default function App() {
   const [text, onChangeText] = React.useState('');
+  const [items, setItems] = React.useState('');
+
+  const handleDelete = (id) => {
+    const newData = items.filter(item => item.id !== id);
+    setItems(newData);
+  };
+
+  const addItem = () => {
+    if (text.length > 0){
+      setItems(prevData => [...prevData, { id: uuidv4(), title: text }]);
+      onChangeText('');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text>TO-DO</Text>
+      <Text
+        style={styles.mainTitle}>TO-DO</Text>
       <Text>Add a Todo to your List</Text>
+      <View style={styles.inputContainer}>
       <TextInput
         style={styles.input}
         onChangeText={onChangeText}
         value={text}
-        placeholder="Todo"/>
+        placeholder="Todo"
+        selectionColor={'red'}/>
         <Button
-        title='Add'/>
+          color='#D9A13B'
+          title='Add'
+          onPress={addItem}/>
+        </View>
         <FlatList
-          data={DATA}
-          renderItem={({item}) => <Item title={item.title}/>}
+          data={items}
+          renderItem={({item}) => <Item title={item.title} onDelete={() => handleDelete(item.id)}/>}
             keyExtractor={item => item.id}
           />
       <StatusBar style="auto" />
@@ -48,25 +58,4 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#D7D9D8',
-    alignItems: 'center',
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-  },
-  item: {
-    backgroundColor: '#D9B341',
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-  title: {
-    fontSize: 32,
-  },
-});
+
